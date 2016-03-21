@@ -4,8 +4,11 @@
 open Akka
 open Akka.FSharp
 
-let findLCSLenSeq (inputStringOne: List<char>) (inputStringTwo: List<char>) upperBoundaryList leftBoundaryList = 
-    inputStringOne.Length
+let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (upperBoundaryList: array<int>) (leftBoundaryList: array<int>) = 
+    let vectorOne = Array.copy(upperBoundaryList)
+    let vectorTwo = Array.copy(vectorOne)
+    let vectorThree = Array.copy(vectorTwo)
+    topString.Length
 
 [<EntryPoint>]
 let main argv = 
@@ -13,9 +16,12 @@ let main argv =
     printfn "Hello world!"
     printfn "%A" argv.[2]
     //0 // return an integer exit code
-    let stringOne = System.IO.File.ReadAllText(argv.[0].[4..]).ToCharArray() |> Array.toList
-    let stringTwo = System.IO.File.ReadAllText(argv.[1].[4..]).ToCharArray() |> Array.toList
+    let stringOne = System.IO.File.ReadAllText(argv.[0].[4..]).ToCharArray()
+    let stringTwo = System.IO.File.ReadAllText(argv.[1].[4..]).ToCharArray()
     //printfn "%A" stringOne
     //printfn "%A" stringTwo
-    printfn "%A" (findLCSLenSeq stringOne stringTwo 3 4)
+    //printfn "%A" (findLCSLenSeq stringOne stringTwo 3 4)
+    let LCSLen = if stringOne.Length > stringTwo.Length then (findLCSLenSeq stringTwo stringOne (Array.zeroCreate stringTwo.Length) (Array.zeroCreate stringOne.Length))
+                 else findLCSLenSeq stringOne stringTwo (Array.zeroCreate stringOne.Length) (Array.zeroCreate stringTwo.Length)
+    printfn "%A" LCSLen
     0 // return an integer exit code
