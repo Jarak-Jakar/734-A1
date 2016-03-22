@@ -4,11 +4,15 @@
 open Akka
 open Akka.FSharp
 
-let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (upperBoundaryList: array<int>) (leftBoundaryList: array<int>) = 
-    let vectorOne = Array.copy(upperBoundaryList)
-    let vectorTwo = Array.copy(vectorOne)
-    let vectorThree = Array.copy(vectorTwo)
+let findLCSLenSeq (topString: array<char>) (sideString: array<char>) = 
+    let upperBoundArray = Array.zeroCreate(topString.Length)
+    let sideBoundArray = Array.zeroCreate(sideString.Length)
+    let vectorOne = Array.copy(upperBoundArray)
     vectorOne.GetValue(0)
+
+let checkCell firstChar secondChar top left topLeft = 
+    if firstChar = secondChar then topLeft + 1
+    else max top left
 
 [<EntryPoint>]
 let main argv = 
@@ -21,7 +25,7 @@ let main argv =
     //printfn "%A" stringOne
     //printfn "%A" stringTwo
     //printfn "%A" (findLCSLenSeq stringOne stringTwo 3 4)
-    let LCSLen = if stringOne.Length > stringTwo.Length then (findLCSLenSeq stringTwo stringOne (Array.zeroCreate stringTwo.Length) (Array.zeroCreate stringOne.Length))
-                 else findLCSLenSeq stringOne stringTwo (Array.zeroCreate stringOne.Length) (Array.zeroCreate stringTwo.Length)
+    let LCSLen = if stringOne.Length > stringTwo.Length then findLCSLenSeq stringTwo stringOne
+                 else findLCSLenSeq stringOne stringTwo
     printfn "%A" LCSLen
     0 // return an integer exit code
