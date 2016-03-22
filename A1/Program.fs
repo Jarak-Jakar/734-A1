@@ -8,7 +8,7 @@ let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (upperBound
     let vectorOne = Array.copy(upperBoundaryList)
     let vectorTwo = Array.copy(vectorOne)
     let vectorThree = Array.copy(vectorTwo)
-    topString.Length
+    vectorOne.GetValue(0)
 
 [<EntryPoint>]
 let main argv = 
