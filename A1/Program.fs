@@ -6,6 +6,8 @@ open Akka.FSharp
 
 
 let checkCell firstChar secondChar top left topLeft = 
+    printfn "\nIn checkCell"
+    printfn "firstChar: %A, secondChar: %A, top: %A, left: %A, topLeft: %A\n" firstChar secondChar top left topLeft
     if firstChar = secondChar then topLeft + 1
     else max top left
 
@@ -56,12 +58,16 @@ let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues:
     printfn "vectorTwo: %A" vectorTwo
     printfn "vectorThree: %A" vectorThree
 
-    // There's surely a better way to do the bounds checking than all these if statements, but I don't know it
+    // There's surely a better way to do the bounds checking than all these if statements, but I don't know it and haven't figured it out
     let rec fillVectorOne (vectorToFill: int[,]) index =
         if index < (Array2D.length1 vectorToFill) then // Stop when this has gone over the whole vector array
-            if vectorToFill.[index, 0] = 0 then vectorToFill.[index, 2] <- sideValues.[vectorToFill.[index, 1]] // If it is on the side, take the value from the side values array
+            if (vectorToFill.[index, 0] >= sideValues.Length) || (vectorToFill.[index, 1] >= topValues.Length) then index |> ignore // If the cell's locale is outside the top or right, then just move on to the next cell
+            elif (vectorToFill.[index, 0] < 0) || (vectorToFill.[index, 1] < 0) then fillVectorOne vectorToFill (Array2D.length1 vectorToFill) // If the cell's locale is outside the left or bottom side of the table, stop recursing by jumping to the end condition
+            //if vectorToFill.[index, 0] = 0 then vectorToFill.[index, 2] <- sideValues.[vectorToFill.[index, 1]] // If it is on the side, take the value from the side values array
+            elif vectorToFill.[index, 0] = 0 then vectorToFill.[index, 2] <- sideValues.[vectorToFill.[index, 1]] // If it is on the side, take the value from the side values array
             elif vectorToFill.[index, 1] = 0 then vectorToFill.[index, 2] <- topValues.[vectorToFill.[index, 0]] // If it is on the top, take the value from the top values array
-            elif (vectorToFill.[index, 0] < 0) || (vectorToFill.[index, 1] < 0) then fillVectorOne vectorToFill (Array2D.length1 vectorToFill) // If the cell's locale is outside the table, stop recursing by jumping to the end condition
+            //elif (vectorToFill.[index, 0] >= sideValues.Length) || (vectorToFill.[index, 1] >= topValues.Length) then fillVectorOne vectorToFill (index + 1)
+            //elif (vectorToFill.[index, 0] < 0) || (vectorToFill.[index, 1] < 0) then fillVectorOne vectorToFill (Array2D.length1 vectorToFill) // If the cell's locale is outside the left or bottom side of the table, stop recursing by jumping to the end condition
             else vectorToFill.[index, 2] <- checkCell topString.[vectorToFill.[index, 0] - 1] sideString.[vectorToFill.[index, 1] - 1] vectorTwo.[index - 1, 2] vectorTwo.[index, 2] vectorThree.[index - 1, 2] // Otherwise, actually perform the calculation function
             fillVectorOne vectorToFill (index + 1) // Recurse to go around again
 
@@ -85,7 +91,7 @@ let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues:
 
     updateVector (vectorOne.[0, 0] + 1) vectorOne
 
-    for i = 3 to topValues.Length do
+    for i = 3 to (topValues.Length + sideValues.Length - 1) do
         fillVectorOne vectorOne 0
         System.Array.Copy(vectorTwo, vectorThree, vectorThree.Length)
         System.Array.Copy(vectorOne, vectorTwo, vectorTwo.Length)
