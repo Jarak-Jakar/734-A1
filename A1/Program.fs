@@ -6,8 +6,8 @@ open Akka.FSharp
 
 
 let checkCell firstChar secondChar top left topLeft = 
-    printfn "\nIn checkCell"
-    printfn "firstChar: %A, secondChar: %A, top: %A, left: %A, topLeft: %A\n" firstChar secondChar top left topLeft
+    //printfn "\nIn checkCell"
+    //printfn "firstChar: %A, secondChar: %A, top: %A, left: %A, topLeft: %A\n" firstChar secondChar top left topLeft
     if firstChar = secondChar then topLeft + 1
     else max top left
 
@@ -30,9 +30,9 @@ let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues:
     let vectorTwo = Array2D.create topString.Length 3 0
     let vectorThree = Array2D.create topString.Length 3 0
 
-    printfn "vectorOne: %A" vectorOne
+    (*printfn "vectorOne: %A" vectorOne
     printfn "vectorTwo: %A" vectorTwo
-    printfn "vectorThree: %A" vectorThree
+    printfn "vectorThree: %A" vectorThree*)
 
     let initVector startNum (arrayInit: int[,]) = 
         Array2D.iteri (fun i j x -> 
@@ -45,18 +45,18 @@ let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues:
     initVector 1 vectorTwo
     initVector 0 vectorThree
 
-    printfn "vectorOne: %A" vectorOne
+    (*printfn "vectorOne: %A" vectorOne
     printfn "vectorTwo: %A" vectorTwo
-    printfn "vectorThree: %A" vectorThree
+    printfn "vectorThree: %A" vectorThree*)
 
     // Prepopulate vectorTwo and vectorThree with some important initial values
     vectorTwo.[0,2] <- topValues.[1]
     vectorTwo.[1,2] <- sideValues.[1]
     vectorThree.[0,2] <- topValues.[0]
 
-    printfn "vectorOne: %A" vectorOne
+    (*printfn "vectorOne: %A" vectorOne
     printfn "vectorTwo: %A" vectorTwo
-    printfn "vectorThree: %A" vectorThree
+    printfn "vectorThree: %A" vectorThree*)
 
     // There's surely a better way to do the bounds checking than all these if statements, but I don't know it and haven't figured it out
     let rec fillVectorOne (vectorToFill: int[,]) index =
@@ -73,9 +73,9 @@ let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues:
 
     fillVectorOne vectorOne 0
 
-    printfn "vectorOne: %A" vectorOne
+    (*printfn "vectorOne: %A" vectorOne
     printfn "vectorTwo: %A" vectorTwo
-    printfn "vectorThree: %A" vectorThree
+    printfn "vectorThree: %A" vectorThree*)
     
     // Kinda ugly, and probably not strictly functional, but should be a relatively efficient way to roll the vectors forward
     System.Array.Copy(vectorTwo, vectorThree, vectorThree.Length)
@@ -96,17 +96,15 @@ let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues:
         System.Array.Copy(vectorTwo, vectorThree, vectorThree.Length)
         System.Array.Copy(vectorOne, vectorTwo, vectorTwo.Length)
         updateVector (vectorOne.[0, 0] + 1) vectorOne
-        printfn "vectorOne: %A" vectorOne
+        (*printfn "vectorOne: %A" vectorOne
         printfn "vectorTwo: %A" vectorTwo
-        printfn "vectorThree: %A" vectorThree
+        printfn "vectorThree: %A" vectorThree*)
 
-    printfn "vectorOne: %A" vectorOne
+    (*printfn "vectorOne: %A" vectorOne
     printfn "vectorTwo: %A" vectorTwo
-    printfn "vectorThree: %A" vectorThree
+    printfn "vectorThree: %A" vectorThree*)
 
-    // Now need to roll forward/calculate vectorOne
-
-    vectorOne.[(Array2D.length1 vectorOne) - 1 , 2]
+    vectorOne.[(Array2D.length1 vectorOne) - 1 , 2] // The final return value
 
 
 [<EntryPoint>]
