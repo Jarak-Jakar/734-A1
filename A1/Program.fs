@@ -58,28 +58,28 @@ let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues:
     printfn "vectorTwo: %A" vectorTwo
     printfn "vectorThree: %A" vectorThree*)
 
-    // There's surely a better way to do the bounds checking than all these if statements, but I don't know it and haven't figured it out
+    let v2flen = Array2D.length1 vectorOne // Creating the index comparison value for the below function, but since it always operates on vectorOne (which of course has constant size) it shouldn't be an issue
+    
+    // There's surely a better way to do this bit than all these if statements, but I don't know it and haven't figured it out yet
     let rec fillVectorOne (vectorToFill: int[,]) index =
-        if index < (Array2D.length1 vectorToFill) then // Stop when this has gone over the whole vector array
+        if index < (v2flen) then // Stop when this has gone over the whole vector array
             if (vectorToFill.[index, 0] >= sideValues.Length) || (vectorToFill.[index, 1] >= topValues.Length) then index |> ignore // If the cell's locale is outside the top or right, then just move on to the next cell
             elif (vectorToFill.[index, 0] < 0) || (vectorToFill.[index, 1] < 0) then fillVectorOne vectorToFill (Array2D.length1 vectorToFill) // If the cell's locale is outside the left or bottom side of the table, stop recursing by jumping to the end condition
-            //if vectorToFill.[index, 0] = 0 then vectorToFill.[index, 2] <- sideValues.[vectorToFill.[index, 1]] // If it is on the side, take the value from the side values array
             elif vectorToFill.[index, 0] = 0 then vectorToFill.[index, 2] <- sideValues.[vectorToFill.[index, 1]] // If it is on the side, take the value from the side values array
             elif vectorToFill.[index, 1] = 0 then vectorToFill.[index, 2] <- topValues.[vectorToFill.[index, 0]] // If it is on the top, take the value from the top values array
-            //elif (vectorToFill.[index, 0] >= sideValues.Length) || (vectorToFill.[index, 1] >= topValues.Length) then fillVectorOne vectorToFill (index + 1)
-            //elif (vectorToFill.[index, 0] < 0) || (vectorToFill.[index, 1] < 0) then fillVectorOne vectorToFill (Array2D.length1 vectorToFill) // If the cell's locale is outside the left or bottom side of the table, stop recursing by jumping to the end condition
-            else vectorToFill.[index, 2] <- checkCell topString.[vectorToFill.[index, 0] - 1] sideString.[vectorToFill.[index, 1] - 1] vectorTwo.[index - 1, 2] vectorTwo.[index, 2] vectorThree.[index - 1, 2] // Otherwise, actually perform the calculation function
-            fillVectorOne vectorToFill (index + 1) // Recurse to go around again
+            elif topString.[vectorToFill.[index, 0] - 1] = sideString.[vectorToFill.[index, 1] - 1] then vectorToFill.[index, 2] <- (vectorThree.[index - 1, 2] + 1) // Actually perform the calculation function
+            else vectorToFill.[index, 2] <- max vectorTwo.[index - 1, 2] vectorTwo.[index, 2]  // Otherwise, take the max and move on
+            fillVectorOne vectorToFill (index + 1) // Recurse to go around again - this should be tail recursion so it shouldn't be too much of an issue
 
-    fillVectorOne vectorOne 0
+    //fillVectorOne vectorOne 0
 
     (*printfn "vectorOne: %A" vectorOne
     printfn "vectorTwo: %A" vectorTwo
     printfn "vectorThree: %A" vectorThree*)
     
     // Kinda ugly, and probably not strictly functional, but should be a relatively efficient way to roll the vectors forward
-    System.Array.Copy(vectorTwo, vectorThree, vectorThree.Length)
-    System.Array.Copy(vectorOne, vectorTwo, vectorTwo.Length)
+    //System.Array.Copy(vectorTwo, vectorThree, vectorThree.Length)
+    //System.Array.Copy(vectorOne, vectorTwo, vectorTwo.Length)
 
     // Now that vectorTwo and vectorThree have been rolled forward, update the positions in vectorOne
     let updateVector startNum (arrayUpdate: int[,]) =
@@ -89,9 +89,11 @@ let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues:
             | 1 -> arrayUpdate.[i, j] <- i
             | _ -> x |> ignore) arrayUpdate
 
-    updateVector (vectorOne.[0, 0] + 1) vectorOne
+    //updateVector (vectorOne.[0, 0] + 1) vectorOne
 
-    for i = 3 to (topValues.Length + sideValues.Length - 1) do
+    let tVLsVLMO = topValues.Length + sideValues.Length - 1 // Calculate this number, which will be constant, to avoid recalculation in the for loop below
+
+    for i = 2 to tVLsVLMO do
         fillVectorOne vectorOne 0
         System.Array.Copy(vectorTwo, vectorThree, vectorThree.Length)
         System.Array.Copy(vectorOne, vectorTwo, vectorTwo.Length)
