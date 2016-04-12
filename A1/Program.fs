@@ -5,19 +5,15 @@ open Akka
 open Akka.FSharp
 
 
-let checkCell firstChar secondChar top left topLeft = 
+(*let checkCell firstChar secondChar top left topLeft = 
     //printfn "\nIn checkCell"
     //printfn "firstChar: %A, secondChar: %A, top: %A, left: %A, topLeft: %A\n" firstChar secondChar top left topLeft
     if firstChar = secondChar then topLeft + 1
-    else max top left
+    else max top left*)
 
 let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues: array<int>) (sideValues: array<int>) = 
 
     let vectorLength = sideString.Length
-    
-    //let vectorOne = Array2D.create vectorLength 3 0
-    //let vectorTwo = Array2D.create vectorLength 3 0
-    //let vectorThree = Array2D.create vectorLength 3 0
 
     let vectorOne = Array2D.init vectorLength 3 (fun i j -> 
         match j with
@@ -30,6 +26,7 @@ let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues:
         | 0 -> 1 - i
         | 1 -> i
         | _ -> -1 )
+
     let vectorThree = Array2D.init vectorLength 3 (fun i j -> 
         match j with
         | 0 -> 0 - i
@@ -40,32 +37,17 @@ let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues:
     printfn "vectorTwo: %A" vectorTwo
     printfn "vectorThree: %A" vectorThree*)
 
-    (*let initVector startNum (arrayInit: int[,]) = 
-        Array2D.iteri (fun i j x -> 
-            match j with
-            | 0 -> arrayInit.[i,j] <- startNum - i
-            | 1 -> arrayInit.[i,j] <- i
-            | _ -> arrayInit.[i,j] <- -1) arrayInit*)
-
-    //initVector 2 vectorOne
-    //initVector 1 vectorTwo
-    //initVector 0 vectorThree
-
-    (*printfn "vectorOne: %A" vectorOne
-    printfn "vectorTwo: %A" vectorTwo
-    printfn "vectorThree: %A" vectorThree*)
-
     // Prepopulate vectorTwo and vectorThree with some important initial values
     vectorTwo.[0,2] <- topValues.[1]
     vectorTwo.[1,2] <- sideValues.[1]
     vectorThree.[0,2] <- topValues.[0]
 
-    printfn "vectorOne: %A" vectorOne
+    (*printfn "vectorOne: %A" vectorOne
     printfn "vectorTwo: %A" vectorTwo
-    printfn "vectorThree: %A" vectorThree
+    printfn "vectorThree: %A" vectorThree*)
 
     // There's surely a better way to do the bounds checking than all these if statements, but I don't know it and haven't figured it out
-    let rec fillVectorOne (vectorToFill: int[,]) index =
+    (*let rec fillVectorOne (vectorToFill: int[,]) index =
         if index < (vectorLength) then // Stop when this has gone over the whole vector array
             if (vectorToFill.[index, 0] >= sideValues.Length) || (vectorToFill.[index, 1] >= topValues.Length) then index |> ignore // If the cell's locale is outside the top or right, then just move on to the next cell
             //elif (vectorToFill.[index, 0] < 0) || (vectorToFill.[index, 1] < 0) then fillVectorOne vectorToFill (Array2D.length1 vectorToFill) // If the cell's locale is outside the left or bottom side of the table, stop recursing by jumping to the end condition
@@ -75,6 +57,7 @@ let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues:
             elif vectorToFill.[index, 1] = 0 then vectorToFill.[index, 2] <- topValues.[vectorToFill.[index, 0]] // If it is on the top, take the value from the top values array
             //elif (vectorToFill.[index, 0] >= sideValues.Length) || (vectorToFill.[index, 1] >= topValues.Length) then fillVectorOne vectorToFill (index + 1)
             //elif (vectorToFill.[index, 0] < 0) || (vectorToFill.[index, 1] < 0) then fillVectorOne vectorToFill (Array2D.length1 vectorToFill) // If the cell's locale is outside the left or bottom side of the table, stop recursing by jumping to the end condition
+            //else vectorToFill.[index, 2] <- checkCell topString.[vectorToFill.[index, 0] - 1] sideString.[vectorToFill.[index, 1] - 1] vectorTwo.[index - 1, 2] vectorTwo.[index, 2] vectorThree.[index - 1, 2] // Otherwise, actually perform the calculation function
             else vectorToFill.[index, 2] <- checkCell topString.[vectorToFill.[index, 0] - 1] sideString.[vectorToFill.[index, 1] - 1] vectorTwo.[index - 1, 2] vectorTwo.[index, 2] vectorThree.[index - 1, 2] // Otherwise, actually perform the calculation function
 
             // Do some vector maintenance, in preparation for processing the next cell (and the next step of the vector)
@@ -125,10 +108,22 @@ let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues:
 
     (*printfn "vectorOne: %A" vectorOne
     printfn "vectorTwo: %A" vectorTwo
-    printfn "vectorThree: %A" vectorThree*)
+    printfn "vectorThree: %A" vectorThree*)*)
 
-    vectorOne.[(vectorLength) - 1 , 2] // The final return value
 
+
+    //vectorOne.[(vectorLength) - 1 , 2] // The final return value
+
+    let rec fillVectorOne index = 
+        if index < vectorLength then
+            if (vectorOne.[index, 0] < 0) || (vectorOne.[index, 1] < 0) then fillVectorOne(vectorLength) // Skip to end if have reached part of vector outside table
+            else vectorOne.[index, 2] <- 
+                    if topString.[vectorOne.[index, 0] - 1] = sideString.[vectorOne.[index, 1] - 1] then vectorThree.[index - 1, 2]
+                    else max vectorTwo.[index, 2] vectorTwo.[index - 1, 2]
+
+        fillVectorOne (index + 1)  // Should be a tail-recursive call
+
+    64
 
 [<EntryPoint>]
 let main argv = 
