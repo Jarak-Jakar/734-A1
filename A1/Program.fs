@@ -79,14 +79,14 @@ let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues:
 
             // Do some vector maintenance, in preparation for processing the next cell (and the next step of the vector)
             //Transfer vector two back to vector three
-            vectorThree.[index, 0] <- vectorTwo.[index, 0]
+            (*vectorThree.[index, 0] <- vectorTwo.[index, 0]
             vectorThree.[index, 1] <- vectorTwo.[index, 1]
-            vectorThree.[index, 2] <- vectorTwo.[index, 2]
+            vectorThree.[index, 2] <- vectorTwo.[index, 2]*)
 
             // Transfer vector one back to vector two
-            vectorTwo.[index, 0] <- vectorOne.[index, 0]
+            (*vectorTwo.[index, 0] <- vectorOne.[index, 0]
             vectorTwo.[index, 1] <- vectorOne.[index, 1]
-            vectorTwo.[index, 2] <- vectorOne.[index, 2]
+            vectorTwo.[index, 2] <- vectorOne.[index, 2]*)
 
             // Update the values in vectorOne in preparation for the next fillVector
             vectorOne.[index, 0] <- (vectorOne.[index, 0] + 1)
@@ -116,12 +116,12 @@ let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues:
 
     for i = 2 to (topValues.Length + sideValues.Length - 1) do
         fillVectorOne vectorOne 0
-        //System.Array.Copy(vectorTwo, vectorThree, vectorThree.Length)
-        //System.Array.Copy(vectorOne, vectorTwo, vectorTwo.Length)
+        System.Array.Copy(vectorTwo, vectorThree, vectorThree.Length)
+        System.Array.Copy(vectorOne, vectorTwo, vectorTwo.Length)
         //updateVector (vectorOne.[0, 0] + 1) vectorOne
-        printfn "vectorOne: %A" vectorOne
+        (*printfn "vectorOne: %A" vectorOne
         printfn "vectorTwo: %A" vectorTwo
-        printfn "vectorThree: %A" vectorThree
+        printfn "vectorThree: %A" vectorThree*)
 
     (*printfn "vectorOne: %A" vectorOne
     printfn "vectorTwo: %A" vectorTwo
