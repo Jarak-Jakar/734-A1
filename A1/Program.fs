@@ -11,7 +11,7 @@ open Akka.FSharp
     if firstChar = secondChar then topLeft + 1
     else max top left*)
 
-let findLCSLenSeq' (topString: array<char>) (sideString: array<char>) (topValues: array<int>) (sideValues: array<int>) = //Going to ignore this one and start again for now
+(*let findLCSLenSeq' (topString: array<char>) (sideString: array<char>) (topValues: array<int>) (sideValues: array<int>) = //Going to ignore this one and start again for now
 
     let vectorLength = sideString.Length
 
@@ -123,15 +123,19 @@ let findLCSLenSeq' (topString: array<char>) (sideString: array<char>) (topValues
 
         fillVectorOne (index + 1)  // Should be a tail-recursive call
 
-    64
+    64*)
 
 let findLCSLenSeq (topString: char[]) (sideString: char[]) (topValues: int[]) (sideValues: int[]) = 
     
-    let vectorLength = topValues.Length
+    let vectorLength = sideValues.Length
     
     let mutable vectorOne = Array.create vectorLength 0
     let mutable vectorTwo = Array.create vectorLength 0
     let mutable vectorThree = Array.create vectorLength 0
+    let bottomValues = Array.create topValues.Length 0
+    let rightValues = Array.create vectorLength 0
+    let mutable tempVector = Array.create vectorLength 0 // This one will just be used to temporarily hold the pointer for one of the other vectors, declaring it here so that it won't be
+                                                         // Garbage Collected until the end of findLCSLenSeq
 
     // Initialise the back vectors
     vectorThree.[0] <- topValues.[0]
@@ -140,38 +144,71 @@ let findLCSLenSeq (topString: char[]) (sideString: char[]) (topValues: int[]) (s
 
     // Function to traverse a vector and fill it with the relevant values
     let rec fillVector index finalIndex iterationNum (frontVector: int[]) (middleVector: int[]) (backVector: int[]) = 
+        printfn "Entered fillVector!  index: %A, finalIndex: %A, iterationNum %A" index finalIndex iterationNum
         if index < finalIndex then  // Stop if have gone outside the bounds provided
-            printfn "Entered fillVector!"
-            if topString.[iterationNum - index] = sideString.[index] then frontVector.[index] <- backVector.[index - 1] + 1
+            printfn "topString: %A, sideString: %A" topString.[iterationNum - index - 1] sideString.[index - 1]
+            if topString.[iterationNum - index - 1] = sideString.[index - 1] then frontVector.[index] <- backVector.[index - 1] + 1
             else frontVector.[index] <- max middleVector.[index] middleVector.[index - 1]
             fillVector (index + 1) finalIndex iterationNum frontVector middleVector backVector
 
     // Traverse over the first part of the array, while the vectors build up to full size
-    (*for i = 2 to (sideString.Length - 1) do
+    for i = 2 to sideString.Length do
         vectorOne.[0] <- topValues.[i]
-        fillVector 1 (i - 1) i vectorOne vectorTwo vectorThree
+        fillVector 1 i i vectorOne vectorTwo vectorThree
         vectorOne.[i] <- sideValues.[i]
-        printfn "vectorOne: %A\nvectorTwo: %A\nvectorThree:%A" vectorOne vectorTwo vectorThree*)
+        printfn "vectorOne: %A\nvectorTwo: %A\nvectorThree:%A" vectorOne vectorTwo vectorThree
+        tempVector <- vectorThree
+        vectorThree <- vectorTwo
+        vectorTwo <- vectorOne
+        vectorOne <- tempVector
 
-    let mutable traversalIndex = 2
+    bottomValues.[0] <- sideValues.[sideValues.Length - 1]
 
-    let rec traverseFirstSection tIndex (firstVector: int[]) (secondVector: int[]) (thirdVector: int[]) =
+    // Traverse over the middle part, where the vector will be at full length - this may not necessarily be triggered
+    for i = (sideString.Length + 1) to topString.Length do
+        printfn "i = %A" i
+        vectorOne.[0] <- topValues.[i]
+        fillVector 1 (sideString.Length + 1) i vectorOne vectorTwo vectorThree
+        bottomValues.[i - vectorLength + 1] <- vectorOne.[vectorLength - 1]
+        printfn "vectorOne: %A\nvectorTwo: %A\nvectorThree:%A\nbottomValues: %A" vectorOne vectorTwo vectorThree bottomValues
+        tempVector <- vectorThree
+        vectorThree <- vectorTwo
+        vectorTwo <- vectorOne
+        vectorOne <- tempVector
+
+    rightValues.[0] <- topValues.[topValues.Length - 1]
+
+    // Traverse over the last part, where the vector will be slowly reducing
+    for i = (topString.Length + 1) to (topString.Length + sideString.Length) do
+        fillVector (i - topString.Length) vectorLength i vectorOne vectorTwo vectorThree
+        rightValues.[i - topString.Length] <- vectorOne.[i - topString.Length]
+        bottomValues.[i - vectorLength + 1] <- vectorOne.[vectorLength - 1]
+        printfn "vectorOne: %A\nvectorTwo: %A\nvectorThree:%A\nbottomValues: %A\nrightValues: %A" vectorOne vectorTwo vectorThree bottomValues rightValues
+        tempVector <- vectorThree
+        vectorThree <- vectorTwo
+        vectorTwo <- vectorOne
+        vectorOne <- tempVector
+
+    vectorTwo.[vectorTwo.Length - 1]
+
+    //let mutable traversalIndex = 2
+
+    (*let rec traverseFirstSection tIndex (firstVector: int[]) (secondVector: int[]) (thirdVector: int[]) =
         if tIndex < sideString.Length then
             firstVector.[0] <- topValues.[tIndex]
             fillVector 1 tIndex tIndex firstVector secondVector thirdVector
             firstVector.[tIndex] <- sideValues.[tIndex]
             printfn "firstVector: %A\nsecondVector: %A\nthirdVector:%A" firstVector secondVector thirdVector
             traverseFirstSection (tIndex + 1) secondVector thirdVector firstVector
+        
         vectorThree <- thirdVector
         vectorTwo <- secondVector
         vectorOne <- firstVector
-        traversalIndex <- tIndex
-        printfn "vectorOne: %A\nvectorTwo: %A\nvectorThree: %A\ntraversalIndex: %A" vectorOne vectorTwo vectorThree traversalIndex
+        traversalIndex <- tIndex - 1*)
+        //printfn "vectorOne: %A\nvectorTwo: %A\nvectorThree: %A\ntraversalIndex: %A" vectorOne vectorTwo vectorThree traversalIndex
         
 
-    traverseFirstSection traversalIndex vectorOne vectorTwo vectorThree
-
-    64
+    //traverseFirstSection traversalIndex vectorOne vectorTwo vectorThree
 
 [<EntryPoint>]
 let main argv = 
