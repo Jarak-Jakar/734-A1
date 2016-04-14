@@ -2,10 +2,11 @@
 // See the 'F# Tutorial' project for more help.
 
 open Akka
+open Akka.Actor
 open Akka.FSharp
 
 let findLCSLenSeq (topString: char[]) (sideString: char[]) (topValues: int[]) (sideValues: int[]) = // This seems to work pretty well...
-    
+                                                                                                    // Though note that it assumes that topString >= sideString
     let vectorLength = sideValues.Length
     
     let mutable vectorOne = Array.create vectorLength 0
@@ -68,7 +69,22 @@ let findLCSLenSeq (topString: char[]) (sideString: char[]) (topValues: int[]) (s
         vectorTwo <- vectorOne
         vectorOne <- tempVector
 
-    vectorTwo.[vectorTwo.Length - 1]  // vectorTwo here, because I will have just swapped the pointers around so that this is now what was vectorOne
+    (vectorTwo.[vectorTwo.Length - 1], bottomValues, rightValues)  // vectorTwo here, because I will have just swapped the pointers around so that this is now what was vectorOne
+
+let parsync (topString: char[]) (sideString: char[]) (topValues: int[]) (sideValues: int[]) verticalChunks horiztonalChunks = 
+    // Starting by just creating one actor, and having it process the whole thing normally
+    use system = ActorSystem.Create "734AssignmentOne"
+    let agent = 
+        spawn system "agent"
+        <| fun (inbox) ->
+            let rec loop = 
+                actor {
+                    let! message = inbox.Receive()
+                    let (result1, result2, result3) = if topString.Length > sideString.Length then findLCSLenSeq topString sideString topValues sideValues
+                                                      else findLCSLenSeq sideString topString sideValues 
+                }
+            loop
+    64
 
 [<EntryPoint>]
 let main argv = 
@@ -80,9 +96,10 @@ let main argv =
     let mutable LCSLen = 0
     let mode = argv.[2]
     match mode with
-        | "/SEQ" -> LCSLen <- if stringOne.Length < stringTwo.Length then findLCSLenSeq stringTwo stringOne (Array.zeroCreate(stringTwo.Length + 1)) (Array.zeroCreate(stringOne.Length + 1))
-                              else findLCSLenSeq stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1))
-        | "/PAR-SYNC" -> LCSLen <- -1
+        | "/SEQ" -> let (totalLen, bottomValues, rightValues) = if stringOne.Length < stringTwo.Length then findLCSLenSeq stringTwo stringOne (Array.zeroCreate(stringTwo.Length + 1)) (Array.zeroCreate(stringOne.Length + 1))
+                                                                else findLCSLenSeq stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1))
+                    LCSLen <- totalLen
+        | "/PAR-SYNC" -> LCSLen <- parsync stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1)) 2 3
         | "/PAR-ASYNC" -> LCSLen <- -2
         | _ -> printfn "Incorrect mode parameter stated"
     //printfn "%A" stringOne
