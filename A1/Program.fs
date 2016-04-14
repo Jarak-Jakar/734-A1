@@ -11,7 +11,7 @@ open Akka.FSharp
     if firstChar = secondChar then topLeft + 1
     else max top left*)
 
-let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues: array<int>) (sideValues: array<int>) = 
+let findLCSLenSeq' (topString: array<char>) (sideString: array<char>) (topValues: array<int>) (sideValues: array<int>) = //Going to ignore this one and start again for now
 
     let vectorLength = sideString.Length
 
@@ -125,6 +125,54 @@ let findLCSLenSeq (topString: array<char>) (sideString: array<char>) (topValues:
 
     64
 
+let findLCSLenSeq (topString: char[]) (sideString: char[]) (topValues: int[]) (sideValues: int[]) = 
+    
+    let vectorLength = topValues.Length
+    
+    let mutable vectorOne = Array.create vectorLength 0
+    let mutable vectorTwo = Array.create vectorLength 0
+    let mutable vectorThree = Array.create vectorLength 0
+
+    // Initialise the back vectors
+    vectorThree.[0] <- topValues.[0]
+    vectorTwo.[0] <- topValues.[1]
+    vectorTwo.[1] <- sideValues.[1]
+
+    // Function to traverse a vector and fill it with the relevant values
+    let rec fillVector index finalIndex iterationNum (frontVector: int[]) (middleVector: int[]) (backVector: int[]) = 
+        if index < finalIndex then  // Stop if have gone outside the bounds provided
+            printfn "Entered fillVector!"
+            if topString.[iterationNum - index] = sideString.[index] then frontVector.[index] <- backVector.[index - 1] + 1
+            else frontVector.[index] <- max middleVector.[index] middleVector.[index - 1]
+            fillVector (index + 1) finalIndex iterationNum frontVector middleVector backVector
+
+    // Traverse over the first part of the array, while the vectors build up to full size
+    (*for i = 2 to (sideString.Length - 1) do
+        vectorOne.[0] <- topValues.[i]
+        fillVector 1 (i - 1) i vectorOne vectorTwo vectorThree
+        vectorOne.[i] <- sideValues.[i]
+        printfn "vectorOne: %A\nvectorTwo: %A\nvectorThree:%A" vectorOne vectorTwo vectorThree*)
+
+    let mutable traversalIndex = 2
+
+    let rec traverseFirstSection tIndex (firstVector: int[]) (secondVector: int[]) (thirdVector: int[]) =
+        if tIndex < sideString.Length then
+            firstVector.[0] <- topValues.[tIndex]
+            fillVector 1 tIndex tIndex firstVector secondVector thirdVector
+            firstVector.[tIndex] <- sideValues.[tIndex]
+            printfn "firstVector: %A\nsecondVector: %A\nthirdVector:%A" firstVector secondVector thirdVector
+            traverseFirstSection (tIndex + 1) secondVector thirdVector firstVector
+        vectorThree <- thirdVector
+        vectorTwo <- secondVector
+        vectorOne <- firstVector
+        traversalIndex <- tIndex
+        printfn "vectorOne: %A\nvectorTwo: %A\nvectorThree: %A\ntraversalIndex: %A" vectorOne vectorTwo vectorThree traversalIndex
+        
+
+    traverseFirstSection traversalIndex vectorOne vectorTwo vectorThree
+
+    64
+
 [<EntryPoint>]
 let main argv = 
     //printfn "%A" argv
@@ -135,7 +183,7 @@ let main argv =
     //printfn "%A" stringOne
     //printfn "%A" stringTwo
     //printfn "%A" (findLCSLenSeq stringOne stringTwo 3 4)
-    let LCSLen = if stringOne.Length > stringTwo.Length then findLCSLenSeq stringTwo stringOne (Array.zeroCreate(stringTwo.Length + 1)) (Array.zeroCreate(stringOne.Length + 1))
+    let LCSLen = if stringOne.Length < stringTwo.Length then findLCSLenSeq stringTwo stringOne (Array.zeroCreate(stringTwo.Length + 1)) (Array.zeroCreate(stringOne.Length + 1))
                  else findLCSLenSeq stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1))
     printfn "%A" LCSLen
     0 // return an integer exit code
