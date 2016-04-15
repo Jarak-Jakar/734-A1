@@ -75,15 +75,8 @@ let parsync (topString: char[]) (sideString: char[]) (topValues: int[]) (sideVal
     // Starting by just creating one actor, and having it process the whole thing normally
     use system = ActorSystem.Create "734AssignmentOne"
     let agent = 
-        spawn system "agent"
-        <| fun (inbox) ->
-            let rec loop = 
-                actor {
-                    let! message = inbox.Receive()
-                    let (result1, result2, result3) = if topString.Length > sideString.Length then findLCSLenSeq topString sideString topValues sideValues
-                                                      else findLCSLenSeq sideString topString sideValues 
-                }
-            loop
+        
+
     64
 
 [<EntryPoint>]
