@@ -85,30 +85,35 @@ let parsync (topString: char[]) (sideString: char[]) (topValues: int[]) (sideVal
     let sideStringsLength = int (round (float sideString.Length / float horizontalChunks))
     let barrier = new System.Threading.Barrier (2)
     let mutable returnValue = 0  // Using this relies on the fact that the last actor to execute is the one in the bottom right corner
-
-    // Whichever length is greater determines which way around sideString and topString are supplied to the find function, due to its assumption that top >= side
     
     // Not great because it actually creates copies of the array subsections, but I'll use it anyway...
-
     let topStringsArray = Array.create verticalChunks [|'a'|]
     let topValsArray = Array.create verticalChunks [|0|]
-    topStringsArray.[0] <- Array.sub topString 0 topStringsLength
-    topValsArray.[0] <- Array.sub topValues 0 (topStringsLength + 1)
-    for i = 1 to (verticalChunks - 2) do
-        topStringsArray.[i] <- Array.sub topString (i * topStringsLength) topStringsLength
-        topValsArray.[i] <- Array.sub topValues ((i * topStringsLength) - 1) (topStringsLength + 1)
-    topStringsArray.[(verticalChunks - 1)] <- Array.sub topString ((verticalChunks - 1) * topStringsLength) (topString.Length - ((verticalChunks - 1) * topStringsLength))
-    topValsArray.[(verticalChunks - 1)] <- Array.sub topValues (((verticalChunks - 1) * topStringsLength) - 1) (topStringsArray.[(verticalChunks - 1)].Length + 1) //(topString.Length - ((verticalChunks - 1) * topStringsLength) + 1)
+    if verticalChunks = 1 then
+        topStringsArray.[0] <- topString
+        topValsArray.[0] <- topValues
+    else
+        topStringsArray.[0] <- Array.sub topString 0 topStringsLength
+        topValsArray.[0] <- Array.sub topValues 0 (topStringsLength + 1)
+        for i = 1 to (verticalChunks - 2) do
+            topStringsArray.[i] <- Array.sub topString (i * topStringsLength) topStringsLength
+            topValsArray.[i] <- Array.sub topValues ((i * topStringsLength) - 1) (topStringsLength + 1)
+        topStringsArray.[(verticalChunks - 1)] <- Array.sub topString ((verticalChunks - 1) * topStringsLength) (topString.Length - ((verticalChunks - 1) * topStringsLength))
+        topValsArray.[(verticalChunks - 1)] <- Array.sub topValues (((verticalChunks - 1) * topStringsLength) - 1) (topStringsArray.[(verticalChunks - 1)].Length + 1) //(topString.Length - ((verticalChunks - 1) * topStringsLength) + 1)
 
     let sideStringsArray = Array.create horizontalChunks [|'a'|]
     let sideValsArray = Array.create horizontalChunks [|0|]
-    sideStringsArray.[0] <- Array.sub sideString 0 sideStringsLength
-    sideValsArray.[0] <- Array.sub sideValues 0 (sideStringsLength + 1)
-    for i = 1 to (horizontalChunks - 2) do
-        sideStringsArray.[i] <- Array.sub sideString (i * sideStringsLength) sideStringsLength
-        sideValsArray.[i] <- Array.sub sideValues ((i * sideStringsLength) - 1) (sideStringsLength + 1)
-    sideStringsArray.[(horizontalChunks - 1)] <- Array.sub sideString ((horizontalChunks - 1) * sideStringsLength) (sideString.Length - ((horizontalChunks - 1) * sideStringsLength))
-    sideValsArray.[(horizontalChunks - 1)] <- Array.sub sideValues (((horizontalChunks - 1) * sideStringsLength) - 1) (sideStringsArray.[(horizontalChunks - 1)].Length + 1)
+    if horizontalChunks = 1 then
+        sideStringsArray.[0] <- sideString
+        sideValsArray.[0] <- sideValues
+    else
+        sideStringsArray.[0] <- Array.sub sideString 0 sideStringsLength
+        sideValsArray.[0] <- Array.sub sideValues 0 (sideStringsLength + 1)
+        for i = 1 to (horizontalChunks - 2) do
+            sideStringsArray.[i] <- Array.sub sideString (i * sideStringsLength) sideStringsLength
+            sideValsArray.[i] <- Array.sub sideValues ((i * sideStringsLength) - 1) (sideStringsLength + 1)
+        sideStringsArray.[(horizontalChunks - 1)] <- Array.sub sideString ((horizontalChunks - 1) * sideStringsLength) (sideString.Length - ((horizontalChunks - 1) * sideStringsLength))
+        sideValsArray.[(horizontalChunks - 1)] <- Array.sub sideValues (((horizontalChunks - 1) * sideStringsLength) - 1) (sideStringsArray.[(horizontalChunks - 1)].Length + 1)
 
     if verticalChunks >= horizontalChunks then // For all cases where there are at least as many divisions along the x-axis as along the y-axis
         // Do process
@@ -326,23 +331,31 @@ let parasync (topString: char[]) (sideString: char[]) (topValues: int[]) (sideVa
 
     let topStringsArray = Array.create verticalChunks [|'a'|]
     let topValsArray = Array.create verticalChunks [|0|]
-    topStringsArray.[0] <- Array.sub topString 0 topStringsLength
-    topValsArray.[0] <- Array.sub topValues 0 (topStringsLength + 1)
-    for i = 1 to (verticalChunks - 2) do
-        topStringsArray.[i] <- Array.sub topString (i * topStringsLength) topStringsLength
-        topValsArray.[i] <- Array.sub topValues ((i * topStringsLength) - 1) (topStringsLength + 1)
-    topStringsArray.[(verticalChunks - 1)] <- Array.sub topString ((verticalChunks - 1) * topStringsLength) (topString.Length - ((verticalChunks - 1) * topStringsLength))
-    topValsArray.[(verticalChunks - 1)] <- Array.sub topValues (((verticalChunks - 1) * topStringsLength) - 1) (topStringsArray.[(verticalChunks - 1)].Length + 1) //(topString.Length - ((verticalChunks - 1) * topStringsLength) + 1)
+    if verticalChunks = 1 then
+        topStringsArray.[0] <- topString
+        topValsArray.[0] <- topValues
+    else
+        topStringsArray.[0] <- Array.sub topString 0 topStringsLength
+        topValsArray.[0] <- Array.sub topValues 0 (topStringsLength + 1)
+        for i = 1 to (verticalChunks - 2) do
+            topStringsArray.[i] <- Array.sub topString (i * topStringsLength) topStringsLength
+            topValsArray.[i] <- Array.sub topValues ((i * topStringsLength) - 1) (topStringsLength + 1)
+        topStringsArray.[(verticalChunks - 1)] <- Array.sub topString ((verticalChunks - 1) * topStringsLength) (topString.Length - ((verticalChunks - 1) * topStringsLength))
+        topValsArray.[(verticalChunks - 1)] <- Array.sub topValues (((verticalChunks - 1) * topStringsLength) - 1) (topStringsArray.[(verticalChunks - 1)].Length + 1) //(topString.Length - ((verticalChunks - 1) * topStringsLength) + 1)
 
     let sideStringsArray = Array.create horizontalChunks [|'a'|]
     let sideValsArray = Array.create horizontalChunks [|0|]
-    sideStringsArray.[0] <- Array.sub sideString 0 sideStringsLength
-    sideValsArray.[0] <- Array.sub sideValues 0 (sideStringsLength + 1)
-    for i = 1 to (horizontalChunks - 2) do
-        sideStringsArray.[i] <- Array.sub sideString (i * sideStringsLength) sideStringsLength
-        sideValsArray.[i] <- Array.sub sideValues ((i * sideStringsLength) - 1) (sideStringsLength + 1)
-    sideStringsArray.[(horizontalChunks - 1)] <- Array.sub sideString ((horizontalChunks - 1) * sideStringsLength) (sideString.Length - ((horizontalChunks - 1) * sideStringsLength))
-    sideValsArray.[(horizontalChunks - 1)] <- Array.sub sideValues (((horizontalChunks - 1) * sideStringsLength) - 1) (sideStringsArray.[(horizontalChunks - 1)].Length + 1)
+    if horizontalChunks = 1 then
+        sideStringsArray.[0] <- sideString
+        sideValsArray.[0] <- sideValues
+    else
+        sideStringsArray.[0] <- Array.sub sideString 0 sideStringsLength
+        sideValsArray.[0] <- Array.sub sideValues 0 (sideStringsLength + 1)
+        for i = 1 to (horizontalChunks - 2) do
+            sideStringsArray.[i] <- Array.sub sideString (i * sideStringsLength) sideStringsLength
+            sideValsArray.[i] <- Array.sub sideValues ((i * sideStringsLength) - 1) (sideStringsLength + 1)
+        sideStringsArray.[(horizontalChunks - 1)] <- Array.sub sideString ((horizontalChunks - 1) * sideStringsLength) (sideString.Length - ((horizontalChunks - 1) * sideStringsLength))
+        sideValsArray.[(horizontalChunks - 1)] <- Array.sub sideValues (((horizontalChunks - 1) * sideStringsLength) - 1) (sideStringsArray.[(horizontalChunks - 1)].Length + 1)
 
     use system = ActorSystem.Create "734AssignmentOne"
     let agents = Array.create horizontalChunks (spawn system "actorName" (actorOf (fun msg -> ())))
@@ -418,8 +431,8 @@ let main argv =
         | "/SEQ" -> let (totalLen, bottomValues, rightValues) = if stringOne.Length < stringTwo.Length then findLCSLenSeq stringTwo stringOne (Array.zeroCreate(stringTwo.Length + 1)) (Array.zeroCreate(stringOne.Length + 1))
                                                                 else findLCSLenSeq stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1))
                     LCSLen <- totalLen
-        | "/PAR-SYNC" -> LCSLen <- parsync stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1)) 25 25
-        | "/PAR-ASYNC" -> LCSLen <- parasync stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1)) 25 25
+        | "/PAR-SYNC" -> LCSLen <- parsync stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1)) 2 2
+        | "/PAR-ASYNC" -> LCSLen <- parasync stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1)) 3 3
         | _ -> printfn "Incorrect mode parameter stated"
     printfn "%d" LCSLen
     0 // return an integer exit code
