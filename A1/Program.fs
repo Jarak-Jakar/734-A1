@@ -84,10 +84,7 @@ let parsync (topString: char[]) (sideString: char[]) (topValues: int[]) (sideVal
     let topStringsLength = int (round (float topString.Length / float verticalChunks))
     let sideStringsLength = int (round (float sideString.Length / float horizontalChunks))
     let barrier = new System.Threading.Barrier (2)
-    let mutable returnValue = 0
-
-    //let topValsLength = int (round (float topValues.Length / float verticalChunks))
-    //let sideValsLength = int (round (float sideValues.Length / float horizontalChunks))
+    let mutable returnValue = 0  // Using this relies on the fact that the last actor to execute is the one in the bottom right corner
 
     // Whichever length is greater determines which way around sideString and topString are supplied to the find function, due to its assumption that top >= side
     
@@ -113,8 +110,6 @@ let parsync (topString: char[]) (sideString: char[]) (topValues: int[]) (sideVal
     sideStringsArray.[(horizontalChunks - 1)] <- Array.sub sideString ((horizontalChunks - 1) * sideStringsLength) (sideString.Length - ((horizontalChunks - 1) * sideStringsLength))
     sideValsArray.[(horizontalChunks - 1)] <- Array.sub sideValues (((horizontalChunks - 1) * sideStringsLength) - 1) (sideStringsArray.[(horizontalChunks - 1)].Length + 1)
 
-    
-
     if verticalChunks >= horizontalChunks then // For all cases where there are at least as many divisions along the x-axis as along the y-axis
         // Do process
         use system = ActorSystem.Create "734AssignmentOne"
@@ -130,9 +125,7 @@ let parsync (topString: char[]) (sideString: char[]) (topValues: int[]) (sideVal
                 let mutable tValChunk = [|-1|]
                 let mutable sValChunk = [|-1|]
                 let rec loop n = 
-                    actor {
-                        //printfn "in agentLCS, numInArray = %d, n = %d" numInArray n
-                    
+                    actor {                    
                         let! mess1 = inbox.Receive ()
                         match mess1 with
                         | TopStr x -> tStrChunk <- x
@@ -178,6 +171,9 @@ let parsync (topString: char[]) (sideString: char[]) (topValues: int[]) (sideVal
                             if n < verticalChunks then
                                 agents.[numInArray] <! (SideVals rVals)
 
+                        //printfn "%d %d %d" numInArray n returnValue
+                        System.Console.WriteLine("{0} {1} {2}", numInArray, n, returnValue)
+
                         barrier.SignalAndWait ()
 
                         return! loop (n + 1)
@@ -187,28 +183,14 @@ let parsync (topString: char[]) (sideString: char[]) (topValues: int[]) (sideVal
         for i = 0 to (agents.Length - 1) do  // Initialise agents with correct function
             agents.[i] <- createAgent i
 
-        // Provide the first top string chunk to the actors
-        //for i = 0 to (agents.Length - 1) do
-        //    agents.[i] <! (TopStr topStringsArray.[0])
-
-        // Provide the appropriate side string chunk to each actor
-        //for i = 0 to (agents.Length - 1) do
-        //    agents.[i] <! (SideStr sideStringsArray.[i])
-
-        // Now loop over the table, triggering actors (?)
+        // Now loop over the table, triggering actors
         for i = 0 to ((min verticalChunks horizontalChunks) - 1) do
             agents.[0] <! (TopVals topValsArray.[i])
             for j in i .. -1 .. 0 do
                 agents.[j] <! (TopStr topStringsArray.[i - j])
                 agents.[j] <! (SideStr sideStringsArray.[j])
-                //if j = 0 then
-                    //agents.[j] <! (TopVals topValues.[(i * topStringsLength)..((i * topStringsLength) + topStringsLength)])
-                //    agents.[j] <! (TopVals topValsArray.[i])
-                    //barrier.AddParticipant () |> ignore
                 if (i - j) = 0 then
-                    //agents.[j] <! (SideVals sideValues.[(j * sideStringsLength)..((j * sideStringsLength) + sideStringsLength)])
                     agents.[j] <! (SideVals sideValsArray.[j])
-                    //barrier.AddParticipant () |> ignore
             barrier.SignalAndWait ()
             barrier.AddParticipant () |> ignore
 
@@ -220,8 +202,6 @@ let parsync (topString: char[]) (sideString: char[]) (topValues: int[]) (sideVal
             for j = 0 to (agents.Length - 1) do
                 agents.[j] <! (TopStr topStringsArray.[i - j])
                 agents.[j] <! (SideStr sideStringsArray.[j])
-                //if j = 0 then
-                //    agents.[j] <! (TopVals topValsArray.[i])
             barrier.SignalAndWait ()
 
         for i = verticalChunks to (verticalChunks + horizontalChunks - 1) do
@@ -247,9 +227,7 @@ let parsync (topString: char[]) (sideString: char[]) (topValues: int[]) (sideVal
                 let mutable tValChunk = [|-1|]
                 let mutable sValChunk = [|-1|]
                 let rec loop n = 
-                    actor {
-                        //printfn "in agentLCS, numInArray = %d, n = %d" numInArray n
-                    
+                    actor {                    
                         let! mess1 = inbox.Receive ()
                         match mess1 with
                         | TopStr x -> tStrChunk <- x
@@ -295,6 +273,9 @@ let parsync (topString: char[]) (sideString: char[]) (topValues: int[]) (sideVal
                             if n < verticalChunks then
                                 agents.[numInArray] <! (SideVals rVals)
 
+                        //printfn "%d %d %d" numInArray n returnValue
+                        System.Console.WriteLine("{0} {1} {2}", numInArray, n, returnValue)
+
                         barrier.SignalAndWait ()
 
                         return! loop (n + 1)
@@ -304,45 +285,29 @@ let parsync (topString: char[]) (sideString: char[]) (topValues: int[]) (sideVal
         for i = 0 to (agents.Length - 1) do  // Initialise agents with correct function
             agents.[i] <- createAgent i
 
-        // Provide the first top string chunk to the actors
-        //for i = 0 to (agents.Length - 1) do
-        //    agents.[i] <! (TopStr topStringsArray.[0])
-
-        // Provide the appropriate side string chunk to each actor
-        //for i = 0 to (agents.Length - 1) do
-        //    agents.[i] <! (SideStr sideStringsArray.[i])
-
         // Now loop over the table, triggering actors (?)
         for i = 0 to ((min verticalChunks horizontalChunks) - 1) do
             agents.[0] <! (TopVals topValsArray.[i])
             for j in i .. -1 .. 0 do
                 agents.[j] <! (TopStr topStringsArray.[i - j])
                 agents.[j] <! (SideStr sideStringsArray.[j])
-                //if j = 0 then
-                    //agents.[j] <! (TopVals topValues.[(i * topStringsLength)..((i * topStringsLength) + topStringsLength)])
-                //    agents.[j] <! (TopVals topValsArray.[i])
-                    //barrier.AddParticipant () |> ignore
                 if (i - j) = 0 then
-                    //agents.[j] <! (SideVals sideValues.[(j * sideStringsLength)..((j * sideStringsLength) + sideStringsLength)])
                     agents.[j] <! (SideVals sideValsArray.[j])
-                    //barrier.AddParticipant () |> ignore
             barrier.SignalAndWait ()
             barrier.AddParticipant () |> ignore
 
         barrier.RemoveParticipant () // Stupid, but necessary due to the way the above works...
 
-        // Now loop over the 'middle' section, if there are more chunks along the top than the side
-        for i = (min verticalChunks horizontalChunks) to (verticalChunks - 1) do
-            //agents.[0] <! (TopVals topValsArray.[i])
-            agents.[i - 1] <! (SideVals sideValsArray.[i-1])
-            for j = 0 to (verticalChunks - 1) do
-                agents.[j] <! (TopStr topStringsArray.[i - j])
-                agents.[j] <! (SideStr sideStringsArray.[j])
-                //if j = 0 then
-                //    agents.[j] <! (TopVals topValsArray.[i])
+        // Now loop over the 'middle' section, if there are more chunks along the side than the top
+        for i = (min verticalChunks horizontalChunks) to (horizontalChunks - 1) do
+            for j = (i - verticalChunks + 1) to i do
+                  agents.[j] <! (TopStr topStringsArray.[i - j])
+                  agents.[j] <! (SideStr sideStringsArray.[j])
+            agents.[i] <! (SideVals sideValsArray.[i])
             barrier.SignalAndWait ()
-
-        for i = verticalChunks to (verticalChunks + horizontalChunks - 1) do
+        
+        // And now do the end part
+        for i = horizontalChunks to (verticalChunks + horizontalChunks - 1) do
             barrier.RemoveParticipant ()
             for j = (i - verticalChunks + 1) to (agents.Length - 1) do
                 agents.[j] <! (TopStr topStringsArray.[i  - j])
@@ -350,37 +315,101 @@ let parsync (topString: char[]) (sideString: char[]) (topValues: int[]) (sideVal
             barrier.SignalAndWait ()
         returnValue
 
-        // Do process with top and side strings flipped around
+let parasync (topString: char[]) (sideString: char[]) (topValues: int[]) (sideValues: int[]) verticalChunks horizontalChunks = 
+    
+    let topStringsLength = int (round (float topString.Length / float verticalChunks))
+    let sideStringsLength = int (round (float sideString.Length / float horizontalChunks))
 
-    // Starting by just creating one actor, and having it process the whole thing normally
-    (*use system = ActorSystem.Create "734AssignmentOne"
-    let agent = 
-        spawn system "agent99"
+    // Whichever length is greater determines which way around sideString and topString are supplied to the find function, due to its assumption that top >= side
+    
+    // Not great because it actually creates copies of the array subsections, but I'll use it anyway...
+
+    let topStringsArray = Array.create verticalChunks [|'a'|]
+    let topValsArray = Array.create verticalChunks [|0|]
+    topStringsArray.[0] <- Array.sub topString 0 topStringsLength
+    topValsArray.[0] <- Array.sub topValues 0 (topStringsLength + 1)
+    for i = 1 to (verticalChunks - 2) do
+        topStringsArray.[i] <- Array.sub topString (i * topStringsLength) topStringsLength
+        topValsArray.[i] <- Array.sub topValues ((i * topStringsLength) - 1) (topStringsLength + 1)
+    topStringsArray.[(verticalChunks - 1)] <- Array.sub topString ((verticalChunks - 1) * topStringsLength) (topString.Length - ((verticalChunks - 1) * topStringsLength))
+    topValsArray.[(verticalChunks - 1)] <- Array.sub topValues (((verticalChunks - 1) * topStringsLength) - 1) (topStringsArray.[(verticalChunks - 1)].Length + 1) //(topString.Length - ((verticalChunks - 1) * topStringsLength) + 1)
+
+    let sideStringsArray = Array.create horizontalChunks [|'a'|]
+    let sideValsArray = Array.create horizontalChunks [|0|]
+    sideStringsArray.[0] <- Array.sub sideString 0 sideStringsLength
+    sideValsArray.[0] <- Array.sub sideValues 0 (sideStringsLength + 1)
+    for i = 1 to (horizontalChunks - 2) do
+        sideStringsArray.[i] <- Array.sub sideString (i * sideStringsLength) sideStringsLength
+        sideValsArray.[i] <- Array.sub sideValues ((i * sideStringsLength) - 1) (sideStringsLength + 1)
+    sideStringsArray.[(horizontalChunks - 1)] <- Array.sub sideString ((horizontalChunks - 1) * sideStringsLength) (sideString.Length - ((horizontalChunks - 1) * sideStringsLength))
+    sideValsArray.[(horizontalChunks - 1)] <- Array.sub sideValues (((horizontalChunks - 1) * sideStringsLength) - 1) (sideStringsArray.[(horizontalChunks - 1)].Length + 1)
+
+    use system = ActorSystem.Create "734AssignmentOne"
+    let agents = Array.create horizontalChunks (spawn system "actorName" (actorOf (fun msg -> ())))
+    // This will probably have a huge performance penalty, since it is initialising actors with a blank function...
+    
+    let result = System.Threading.Tasks.TaskCompletionSource<int> ()
+
+    let createAgent numInArray = 
+        spawn system (sprintf "agentLCS%d" numInArray)
         <| fun inbox ->
-            let rec loop n = // The n variable does nothing in reality here, but I'm using it to keep the compiler happy
-                actor {
-                    let! message = inbox.Receive ()
-                    let sender = inbox.Sender ()
-                    //printfn "Inside agent99!"
-                    match message with
-                    | (tStr, sStr, tVals, sVals) ->
-                        let (totalLen, junk1, junk2) = findLCSLenSeq tStr sStr tVals sVals
-                        sender <! totalLen
-                    return! loop (n+1)
+            let mutable tStrChunk = [|'a'|]
+            let mutable sStrChunk = [|'a'|]
+            let mutable tValChunk = [|-1|]
+            let mutable sValChunk = [|-1|]
+            let mutable returnVal = -1
+            let rec loop n = 
+                actor {                    
+                    
+                    let! mess1 = inbox.Receive () // Should only ever be TopVals
+                    match mess1 with
+                    | TopStr x -> tStrChunk <- x
+                    | SideStr x -> sStrChunk <- x
+                    | TopVals x -> tValChunk <- x
+                    | SideVals x -> sValChunk <- x
+
+                    if n = 0 then
+                        sValChunk <- sideValsArray.[numInArray]  // sVal and sStr should never change for each actor
+                        sStrChunk <- sideStringsArray.[numInArray]
+
+                    tStrChunk <- topStringsArray.[n]
+                    
+                    if sValChunk.Length > tValChunk.Length then
+                        let (len, rVals, bVals) = findLCSLenSeq sStrChunk tStrChunk sValChunk tValChunk
+                        //printfn "%d %d %d" numInArray n len
+                        System.Console.WriteLine("{0} {1} {2}", numInArray, n, len)
+                        returnVal <- len
+                        sValChunk <- rVals
+                        if numInArray < (horizontalChunks - 1) then
+                            agents.[numInArray + 1] <! (TopVals bVals)
+
+                    else 
+                        let (len, bVals, rVals) = findLCSLenSeq tStrChunk sStrChunk tValChunk sValChunk
+                        //printfn "%d %d %d" numInArray n len
+                        System.Console.WriteLine("{0} {1} {2}", numInArray, n, len)
+                        returnVal <- len
+                        sValChunk <- rVals
+                        if numInArray < (horizontalChunks - 1) then
+                            agents.[numInArray + 1] <! (TopVals bVals)
+
+                    if (n = (verticalChunks - 1)) && (numInArray = (horizontalChunks - 1)) then
+                        result.SetResult returnVal
+
+                    return! loop (n + 1)
                 }
-            loop 0*)
+            loop 0
 
-    //let atask = agent <? (topString, sideString, topValues, sideValues)
-    //let (res: int) = Async.RunSynchronously atask
-    //res
+    for i = 0 to (agents.Length - 1) do  // Initialise agents with correct function
+        agents.[i] <- createAgent i
 
-        //64
+    for i = 0 to (verticalChunks - 1) do // Provide the top agent with it's topVals
+        agents.[0] <! (TopVals topValsArray.[i])
+
+    let res = result.Task.Result
+    res
 
 [<EntryPoint>]
 let main argv = 
-    //printfn "%A" argv
-    //printfn "Hello world!"
-    //printfn "%A" argv.[2]
     let stringOne = System.IO.File.ReadAllText(argv.[0].[4..]).ToCharArray()
     let stringTwo = System.IO.File.ReadAllText(argv.[1].[4..]).ToCharArray()
     let mutable LCSLen = 0
@@ -389,13 +418,8 @@ let main argv =
         | "/SEQ" -> let (totalLen, bottomValues, rightValues) = if stringOne.Length < stringTwo.Length then findLCSLenSeq stringTwo stringOne (Array.zeroCreate(stringTwo.Length + 1)) (Array.zeroCreate(stringOne.Length + 1))
                                                                 else findLCSLenSeq stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1))
                     LCSLen <- totalLen
-        | "/PAR-SYNC" -> LCSLen <- parsync stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1)) 5 6
-        | "/PAR-ASYNC" -> LCSLen <- -2
+        | "/PAR-SYNC" -> LCSLen <- parsync stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1)) 25 25
+        | "/PAR-ASYNC" -> LCSLen <- parasync stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1)) 25 25
         | _ -> printfn "Incorrect mode parameter stated"
-    //printfn "%A" stringOne
-    //printfn "%A" stringTwo
-    //printfn "%A" (findLCSLenSeq stringOne stringTwo 3 4)
-    //LCSLen <- if stringOne.Length < stringTwo.Length then findLCSLenSeq stringTwo stringOne (Array.zeroCreate(stringTwo.Length + 1)) (Array.zeroCreate(stringOne.Length + 1))
-    //          else findLCSLenSeq stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1))
     printfn "%d" LCSLen
     0 // return an integer exit code
