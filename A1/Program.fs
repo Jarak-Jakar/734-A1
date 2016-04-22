@@ -1,6 +1,7 @@
 ﻿// Learn more about F# at http://fsharp.org
 // See the 'F# Tutorial' project for more help.
 
+open FSharp.Core
 open Akka
 open Akka.Actor
 open Akka.FSharp
@@ -456,14 +457,14 @@ let main argv =
             LCSLen <- parasync stringOne stringTwo (Array.zeroCreate (stringOne.Length + 1)) (Array.zeroCreate (stringTwo.Length + 1)) verticalAgents horizontalAgents
 
         else
-            printfn "Unknown mode specified.  Program exiting."
+            System.Console.Error.WriteLine("Unknown mode specified.  Program exiting.")
 
         printfn "%d" LCSLen
 
         timer.Stop()
-        printfn "Total time taken was: %d:%d" timer.Elapsed.Minutes timer.Elapsed.Seconds
+        printfn "Total time taken was: %d:%d:%d" timer.Elapsed.Minutes timer.Elapsed.Seconds timer.Elapsed.Milliseconds
 
         0 // return an integer exit code
     with
-        | :? System.IndexOutOfRangeException as err -> printfn "IndexOutOfRange error occurred in the program's execution.  Error details are: %A" err; 1
-        | :? System.SystemException as err -> printfn "Error occurred in the program's execution.  Error details are: %A" err; 2
+        | :? System.IndexOutOfRangeException as err -> System.Console.Error.WriteLine("IndexOutOfRange error occurred in the program's execution.  Error details are: {0}", err);1
+        | :? System.SystemException as err -> System.Console.Error.WriteLine("Error occurred in the program's execution.  Error details are: {0}", err); 2
