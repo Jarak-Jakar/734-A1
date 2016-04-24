@@ -294,7 +294,7 @@ let parsync (topString: char[]) (sideString: char[]) (topValues: int[]) (sideVal
         // Now loop over the table, triggering actors (?)
         for i = 0 to ((min verticalChunks horizontalChunks) - 1) do
             agents.[0] <! (TopVals topValsArray.[i])
-            for j in i .. -1 .. 0 do
+            for j = 0 to i do
                 agents.[j] <! (TopStr topStringsArray.[i - j])
                 agents.[j] <! (SideStr sideStringsArray.[j])
                 if (i - j) = 0 then
