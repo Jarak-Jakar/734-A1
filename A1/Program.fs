@@ -427,19 +427,11 @@ let main argv =
 
     try
 
-        let timer = System.Diagnostics.Stopwatch.StartNew()
+        //let timer = System.Diagnostics.Stopwatch.StartNew()
 
         let stringOne = System.IO.File.ReadAllText(argv.[0].[4..]).ToCharArray()
         let stringTwo = System.IO.File.ReadAllText(argv.[1].[4..]).ToCharArray()
         let mutable LCSLen = -1
-        (*let mode = argv.[2]
-        match mode with
-            | "/SEQ" -> let (totalLen, bottomValues, rightValues) = if stringOne.Length < stringTwo.Length then findLCSLenSeq stringTwo stringOne (Array.zeroCreate(stringTwo.Length + 1)) (Array.zeroCreate(stringOne.Length + 1))
-                                                                    else findLCSLenSeq stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1))
-                        LCSLen <- totalLen
-            | "/PAR-SYNC" -> LCSLen <- parsync stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1)) 2 2
-            | "/PAR-ASYNC" -> LCSLen <- parasync stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1)) 25 25
-            | _ -> printfn "Incorrect mode parameter stated"*)
 
         if argv.[2].Contains("/SEQ") then
             let (totalLen, bottomValues, rightValues) = if stringOne.Length < stringTwo.Length then findLCSLenSeq stringTwo stringOne (Array.zeroCreate(stringTwo.Length + 1)) (Array.zeroCreate(stringOne.Length + 1))
@@ -461,8 +453,8 @@ let main argv =
 
         printfn "%d" LCSLen
 
-        timer.Stop()
-        printfn "Total time taken was: %d:%d:%d" timer.Elapsed.Minutes timer.Elapsed.Seconds timer.Elapsed.Milliseconds
+        //timer.Stop()
+        //printfn "Total time taken was: %d:%d:%d" timer.Elapsed.Minutes timer.Elapsed.Seconds timer.Elapsed.Milliseconds
 
         0 // return an integer exit code
     with
