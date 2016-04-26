@@ -437,6 +437,7 @@ let main argv =
             let (totalLen, bottomValues, rightValues) = if stringOne.Length < stringTwo.Length then findLCSLenSeq stringTwo stringOne (Array.zeroCreate(stringTwo.Length + 1)) (Array.zeroCreate(stringOne.Length + 1))
                                                         else findLCSLenSeq stringOne stringTwo (Array.zeroCreate(stringOne.Length + 1)) (Array.zeroCreate(stringTwo.Length + 1))
             LCSLen <- totalLen
+            printfn "%d" LCSLen
 
         elif argv.[2].Contains("/PAR-SYNC") then        
             let horizontalAgents = System.Int32.Parse(argv.[2].Substring(argv.[2].IndexOf(':') + 1, (argv.[2].IndexOf(',') - argv.[2].IndexOf(':') - 1)))
@@ -450,8 +451,6 @@ let main argv =
 
         else
             System.Console.Error.WriteLine("Unknown mode specified.  Program exiting.")
-
-        printfn "%d" LCSLen
 
         //timer.Stop()
         //printfn "Total time taken was: %d:%d:%d" timer.Elapsed.Minutes timer.Elapsed.Seconds timer.Elapsed.Milliseconds
